@@ -2,13 +2,15 @@
 
 Policy to schedule hosts to wake up at a specific date and time.
 
-This policy provides =rtcwake(when)=, and =rtcwake_subscribe= for
-scheduling wakeup events. =rtcwake(when)= is a traditional bundle that
-takes a parameter in order to be re-usable. =rtcwake_subscribe=
-leverages some of the newer introspection capabilities in CFEngine to
-provide wake events as a service. Any bundle may publish its intent to
-wake at a specific time by simply defining a string variable and
-tagging it appropriately.
+This policy provides =rtcwake(when)=, and =rtcwake_subscribe= bundles
+for scheduling wake events. In addition CFEngine Enterprise users
+may find the =rtcwake_inventory= bundle useful.
+
+
+* =rtcwake(when)=
+
+=rtcwake(when)= is a traditional bundle that takes a parameter in
+order to be re-usable.
 
 #+Name: Example rtcwake(when) usage
 #+BEGIN_SRC cfengine3
@@ -23,6 +25,13 @@ tagging it appropriately.
                       scheduled.";
   }
 #+END_SRC
+
+* =rtcwake_subscribe=
+
+=rtcwake_subscribe= leverages some of the newer introspection
+capabilities in CFEngine to provide wake events as a service. Any
+bundle may publish its intent to wake at a specific time by simply
+defining a string variable and tagging it appropriately.
 
 #+Name: Example rtcwake_subscribe usage
 #+BEGIN_SRC cfengine3
@@ -39,6 +48,25 @@ tagging it appropriately.
           comment => "We allow any bundle to schedule a wake event by
                       defining a string variable with a valid date
                       string value and tagging it with rtcwake";
+
+  }
+#+END_SRC
+
+* =rtcwake_inventory=
+
+=rtcwake_inventory= defines variables and tags them for use in
+CFEngine Enterprise Mission Portal.
+
+#+Name: Example rtcwake_subscribe usage
+#+BEGIN_SRC cfengine3
+  bundle agent main
+  {
+    methods:
+        "Inventory scheduled rtcwakes" -> { "Mission Portal" }
+          usebundle => rtcwake_inventory,
+          comment => "It is useful to inventory scheduled wake
+                      events. So that we can compare when hosts are
+                      scheduled to wake up.";
 
   }
 #+END_SRC
