@@ -79,3 +79,23 @@ bundle agent rtcwake(when)
                       to wake up or not";
 }
 
+bundle agent rtcwake_inventory
+# @brief Inventory rtcwakes that are scheduled
+{
+  vars:
+      "scheduled_wakes"
+        slist => lsdir( $(rtcwake_g.state_dir), "\d+", false );
+
+      # We only inventory the wakes that are scheduled in the future
+      "rtcwake[$(scheduled_wakes)]"
+        string => strftime( "localtime", "%Y-%m-%d %l:%M%p %Z", $(scheduled_wakes) ),
+        meta => { "inventory", "attribute_name=Scheduled rtcwake" },
+        if => isgreaterthan( $(scheduled_wakes), now() );
+
+      "dates" slist => getvalues(rtcwake);
+
+  reports:
+      DEBUG|DEBUG_rtcwake_inventory::
+      "DEBUG $(this.bundle): $(scheduled_wakes)";
+      "DEBUG $(this.bundle): $(dates)";
+}
