@@ -1,9 +1,12 @@
-#bundle agent main
-#{
-#  methods:
-#      "Wake up for updates"
-#        usebundle => rtcwake("saturday 1:00am");
-#}
+bundle common rtcwake_g
+{
+  meta:
+      "purpose" string => "Define variables common to rtcwake bundles";
+
+  vars:
+      # Todo: set this conditionally and allow overriede from def
+      "state_dir" string => "$(sys.workdir)/state/rtcwake";
+}
 
 bundle agent rtcwake(when)
 # @brief Schedule a time for a machine to wake up from sleep
@@ -19,13 +22,13 @@ bundle agent rtcwake(when)
                     for proper scheduling";
 
       "state_file"
-        string => "$(sys.workdir)/state/rtcwake/$(epoc_next_wake)";
+        string => "$(rtcwake_g.state_dir)/$(epoc_next_wake)";
 
   classes:
       # We look for a simple statefile to see if we have already
       # successfully scheduled the wakeup.
       "next_rtcwake_scheduled"
-        expression => fileexists("$(sys.workdir)/state/tcwake/$(epoc_next_wake)"),
+        expression => fileexists("$(state_file)"),
         comment => "We need to know if we have already scheduled the
                     next wakeup so that we don't continue to schedule
                     additional wakeups for the same time.";
