@@ -28,6 +28,12 @@ bundle agent rtcwake(when)
       "Purpose" string => "Ensure the host is schedule to wake up at a specific date time.";
 
   vars:
+      # We find the scheduled wakes so that we can purge wakes that
+      # have already past.
+      "scheduled_wakes"
+        slist => lsdir( $(rtcwake_g.state_dir), "\d+", false );
+
+
       "epoc_next_wake"
         string => execresult("/bin/date +%s -d '$(when)'", noshell),
         comment => "We need to know the epoch of the next wake time
@@ -58,6 +64,12 @@ bundle agent rtcwake(when)
                     available for scheduled promises.";
 
   files:
+      any::
+        "$(rtcwake_g.state_dir)/$(scheduled_wakes)"
+          delete => tidy,
+          if => islessthan( $(scheduled_wakes), now() ),
+          comment => "We purge rtcwakes that have past to keep things tidy";
+
       rtcwake_repaired::
         "$(state_file)"
           create => "true",
