@@ -1,0 +1,67 @@
+#+Title: cfengine-rtcwake
+
+Policy to schedule hosts to wake up at a specific date and time.
+
+This policy provides =rtcwake(when)=, and =rtcwake_subscribe= for
+scheduling wakeup events. =rtcwake(when)= is a traditional bundle that
+takes a parameter in order to be re-usable. =rtcwake_subscribe=
+leverages some of the newer introspection capabilities in CFEngine to
+provide wake events as a service. Any bundle may publish its intent to
+wake at a specific time by simply defining a string variable and
+tagging it appropriately.
+
+#+Name: Example rtcwake(when) usage
+#+BEGIN_SRC cfengine3
+  bundle agent main
+  {
+    methods:
+        "Wake up for updates"
+          usebundle => rtcwake("saturday 1:00am"),
+          comment => "We schedule updates during the weekend and
+                      scheduling a wakup increases the likelyhood that a
+                      machine will be on during the window updates are
+                      scheduled.";
+  }
+#+END_SRC
+
+#+Name: Example rtcwake_subscribe usage
+#+BEGIN_SRC cfengine3
+  bundle agent main
+  {
+    vars:
+        "wake"
+          string => "saturday 1:00am",
+          meta => { "rtcwake" };
+
+    methods:
+        "Wake up for updates"
+          usebundle => rtcwake_subscribe,
+          comment => "We allow any bundle to schedule a wake event by
+                      defining a string variable with a valid date
+                      string value and tagging it with rtcwake";
+
+  }
+#+END_SRC
+
+* Installing
+You can install the policy into your policy set using ~make~.
+
+#+BEGIN_SRC sh :results replace raw :wrap example
+make POLICY_ROOT=/tmp/masterfiles
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_example
+mkdir -p /tmp/masterfiles/services/cfengine-rtcwake
+cp -R policy/* /tmp/masterfiles/services/cfengine-rtcwake
+#+END_example
+
+After the policy is installed you will need to add it to your inputs
+and obviously ensure it gets actuated from the =bundlesequence= or as a
+methods type promise.`
+
+* What Else?
+
+** TODO provide an autorun/load bundle
+
+** TODO provide an automated way to populate def.json for augmenting inputs
