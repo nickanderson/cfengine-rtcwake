@@ -1,0 +1,54 @@
+#bundle agent main
+#{
+#  methods:
+#      "Wake up for updates"
+#        usebundle => rtcwake("saturday 1:00am");
+#}
+
+bundle agent rtcwake(when)
+# @brief Schedule a time for a machine to wake up from sleep
+# @param when a `date` compliant string
+{
+  meta:
+      "description" string => "Schedule a time for a machine to wake up from sleep.";
+
+  vars:
+      "epoc_next_wake"
+        string => execresult("/bin/date +%s -d '$(when)'", noshell),
+        comment => "We need to know the epoch of the next wake time
+                    for proper scheduling";
+
+      "state_file"
+        string => "$(sys.workdir)/state/rtcwake/$(epoc_next_wake)";
+
+  classes:
+      # We look for a simple statefile to see if we have already
+      # successfully scheduled the wakeup.
+      "next_rtcwake_scheduled"
+        expression => fileexists("$(sys.workdir)/state/tcwake/$(epoc_next_wake)"),
+        comment => "We need to know if we have already scheduled the
+                    next wakeup so that we don't continue to schedule
+                    additional wakeups for the same time.";
+
+  commands:
+
+      # You might need to account for hardware clock being UTC or
+      # local time
+
+      "/usr/sbin/rtcwake"
+        args => "-m no -t $(epoc_next_wake)",
+        classes => scoped_classes_generic("bundle", "rtcwake"),
+        unless => "scheduled_next_rtcwake",
+        comment => "We try to wake the computer up so that it can be
+                    available for scheduled promises.";
+
+  files:
+      rtcwake_repaired::
+        "$(state_file)"
+          create => "true",
+          comment => "We create this statefile upon the successful
+                      issuance of the rtcwake command so that we can
+                      tell if we have already scheduled the computer
+                      to wake up or not";
+}
+
