@@ -8,6 +8,52 @@ bundle common rtcwake_g
       "state_dir" string => "$(sys.workdir)/state/rtcwake";
 }
 
+bundle agent rtcwake_subscribe
+# @brief This is a subscription interface to rtcwake
+#
+# Simply define string variable with a valid date string value and tag
+# it with `rtcwake`. This bundle should be actuated after the rest of
+# your policy, near the end of the bundlesequence so that there is
+# plenty of opportunity for other bundles to define variables.
+#
+# **Example:**
+#
+# ```cf3
+# bundle agent bundle1
+# {
+#   vars:
+#       "wake" string => "saturday 2:00pm", meta => { "rtcwake" };
+#
+# }
+#
+# bundle agent bundle2
+# {
+#   vars:
+#       "wake" string => "saturday 2:00pm", meta => { "rtcwake" };
+#
+# }
+#
+# bundle agent actuate_rtcwake
+# {
+#   methods:
+#
+#       "Wake up for updates"
+#         usebundle => rtcwake_subscribe;
+# }
+# ```
+{
+  meta:
+      "purpose" string => "Collect date strings tagged with rtcwake and schedule them.";
+
+  vars:
+      "wake_vars" slist => variablesmatching(".*", "rtcwake");
+      "wake[$(wake_vars)]" string => "$($(wake_vars))";
+      "wakes" slist => getvalues( wake );
+
+  methods:
+     "Schedule Wake" usebundle => rtcwake( $(wakes) );
+}
+
 bundle agent rtcwake(when)
 # @brief Schedule a time for a machine to wake up from sleep
 # @param when a `date` compliant string
