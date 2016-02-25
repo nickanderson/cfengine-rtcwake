@@ -11,9 +11,21 @@ bundle common rtcwake_g
 bundle agent rtcwake(when)
 # @brief Schedule a time for a machine to wake up from sleep
 # @param when a `date` compliant string
+#
+# **Example:**
+#
+# ``cf3
+# bundle agent example
+# {
+#   methods:
+#
+#       "Wake up for updates"
+#         usebundle => rtcwake("saturday 1:00am");
+# }
+# ```
 {
   meta:
-      "description" string => "Schedule a time for a machine to wake up from sleep.";
+      "Purpose" string => "Ensure the host is schedule to wake up at a specific date time.";
 
   vars:
       "epoc_next_wake"
